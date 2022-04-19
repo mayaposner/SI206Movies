@@ -17,7 +17,7 @@ def createMainTable(cur, conn):
     conn.commit()
 
 def createYearTable(cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS Years (year TEXT, ID INTEGER)")
+    cur.execute("CREATE TABLE IF NOT EXISTS Years (year TEXT, ID INTEGER PRIMARY KEY UNIQUE)")
     conn.commit()
 
 def retrieveIMDBdata():
@@ -34,7 +34,10 @@ def retrieveIMDBdata():
 def fillYearTable(cur, conn):
     yr = 2019
     for i in range(3):
-        cur.execute("INSERT OR IGNORE INTO Years (year, ID) VALUES (?, ?)", (yr, i))
+        cur.execute("SELECT max(ID) FROM Years")
+        count = cur.fetchone()[0]
+        if count != 2:
+            cur.execute("INSERT OR IGNORE INTO Years (year, ID) VALUES (?, ?)", (yr, i))
         yr += 1
     conn.commit()
 
@@ -44,7 +47,7 @@ def fillMovieTable(moviestups, cur, conn):
     if count ==  None:
         count = 0
 
-    for i in range(count, count+26):
+    for i in range(count, count+25):
         title = moviestups[i][0]
         year = moviestups[i][1]
         cur.execute(f"SELECT ID from Years WHERE year = {(str(year))}")
@@ -57,8 +60,8 @@ def main():
     cur, conn = setUpDataBase('Movies.db')
     createMainTable(cur, conn)
     createYearTable(cur, conn)
-    movies = retrieveIMDBdata()
     fillYearTable(cur, conn)
+    movies = retrieveIMDBdata()
     fillMovieTable(movies, cur, conn)
 
 
