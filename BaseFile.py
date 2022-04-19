@@ -13,7 +13,7 @@ def setUpDataBase(db_name):
     return cur, conn
 
 def createMainTable(cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS Movies (movie_title TEXT, movie_id INTEGER PRIMARY KEY UNIQUE , yearID INTEGER)")
+    cur.execute("CREATE TABLE IF NOT EXISTS Movies (movie_title TEXT UNIQUE, movie_id INTEGER PRIMARY KEY UNIQUE , yearID INTEGER)")
     conn.commit()
 
 def createYearTable(cur, conn):
@@ -48,11 +48,14 @@ def fillMovieTable(moviestups, cur, conn):
         count = 0
 
     for i in range(count, count+25):
-        title = moviestups[i][0]
-        year = moviestups[i][1]
-        cur.execute(f"SELECT ID from Years WHERE year = {(str(year))}")
-        yearid = cur.fetchone()[0]
-        cur.execute("INSERT OR IGNORE INTO Movies (movie_title, movie_id, yearID) VALUES (?,?,?)", (title, i, yearid))
+        try:
+            title = moviestups[i][0]
+            year = moviestups[i][1]
+            cur.execute(f"SELECT ID from Years WHERE year = {(str(year))}")
+            yearid = cur.fetchone()[0]
+            cur.execute("INSERT OR IGNORE INTO Movies (movie_title, movie_id, yearID) VALUES (?,?,?)", (title, i, yearid))
+        except:
+            'exceeded 100 items'
 
     conn.commit()
 
