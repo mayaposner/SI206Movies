@@ -32,7 +32,6 @@ def retrieveIMDBdata():
     return movie_ratings
 
 def fillRatingTable(movieratings, cur, conn):
-    #cur.execute("ALTER TABLE student ADD COLUMN Address varchar")
     cur.execute("SELECT max(movie_id) FROM IMDB_Ratings")
     count = cur.fetchone()[0]
     if count ==  None:
@@ -49,16 +48,95 @@ def fillRatingTable(movieratings, cur, conn):
 
     conn.commit()
 
-'''
-select from oscars join ratings where movie_id.oscars = movie_id.ratings if oscars_id = 1
-for data in bargraph, select from the oscars table all the movies that won oscars
-for each movie, 1 bar going up to the rate out of 100 for critic reviews, and 1 bar for audience reviews'''
+def graph_ratings_movies1to30(cur, conn):
+    cur.execute("SELECT Movies.movie_title, IMDB_Ratings.ImdbRate, IMDB_Ratings.MetacriticScore FROM IMDB_Ratings JOIN Movies ON Movies.movie_id = IMDB_Ratings.movie_id")
+    res = cur.fetchall()[:30]
+    ngroups = len(res)
+
+    imdb = []
+    meta = []
+    titles = []
+
+    for tups in res:
+        title = tups[0]
+        titles.append(title)
+        imdbrate = tups[1]
+        imdb.append(imdbrate)
+        metarate = tups[2]
+        meta.append(metarate)
+
+    fig, ax = plt.subplots()
+    index = np.arange(ngroups)
+    bar_width = 0.25
+    opacity = 0.8
+
+    rects1 = plt.bar(index, imdb, bar_width, alpha = opacity, color = 'navy', label = "Audience Ratings") 
+    rects2 = plt.bar(index + bar_width, meta, bar_width, alpha = opacity, color = 'salmon', label = "Critic Ratings")
+    
+    plt.xlabel('Movie')
+    plt.ylabel('Ratings')
+    plt.title('Ratings by Movie')
+    plt.xticks(index + bar_width, titles, fontsize = 'small')
+    fig.autofmt_xdate()
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+def pieChartofRatings(cur, conn):
+    cur.execute("SELECT ImdbRate, MetacriticScore FROM IMDB_Ratings")
+    res = cur.fetchall()
+
+    audience_higher = 0 
+    critic_higher = 0 
+    tie = 0 
+
+    for tups in res:
+        audience = tups[0]
+        critic = tups[1]
+        if audience > critic: 
+            audience_higher += 1 
+        if critic > audience:
+            critic_higher += 1 
+        if audience == critic:
+            tie += 1
+    
+    labels = 'Audience', 'Critic', 'Tie' 
+    sizes = [audience_higher, critic_higher, tie]
+    explode = (0, 0.1, 0)
+    colors = ('lightgreen', 'deepskyblue', 'tomato')
+
+    fig1, ax1 = plt.subplots()
+    ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',shadow=True, startangle=90, colors = colors)
+    
+    ax1.axis('equal')  
+
+    plt.show()
+
+def findAverageRatingDifference(cur, conn):
+    cur.execute("SELECT ImdbRate, MetacriticScore FROM IMDB_Ratings")
+    res = cur.fetchall()
+
+    total = len(res)
+
+    difference = 0
+
+    for tups in res:
+        audience = tups[0]
+        critic = tups[1]
+        dif = abs(audience - critic)
+        difference += dif
+
+    average = difference/total
+    return average
 
 def main():
     cur,conn = createRatingTable()
     movieratings = retrieveIMDBdata()
     fillRatingTable(movieratings, cur, conn)
+    graph_ratings_movies1to30(cur, conn)
+    pieChartofRatings(cur, conn)
+    findAverageRatingDifference(cur, conn)
 
-    
 if __name__ == "__main__":
     main()
