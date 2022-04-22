@@ -45,6 +45,10 @@ def fillRatingTable(movieratings, cur, conn):
 
     conn.commit()
 
+'''
+select from oscars join ratings where movie_id.oscars = movie_id.ratings if oscars_id = 1
+for data in bargraph, select from the oscars table all the movies that won oscars
+for each movie, 1 bar going up to the rate out of 100 for critic reviews, and 1 bar for audience reviews'''
 
 def main():
     cur,conn = createRatingTable()
