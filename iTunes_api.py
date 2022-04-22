@@ -14,19 +14,77 @@ def createTable():
     
     conn.commit()
 
+    return cur, conn
+
 def getData():
+    data_tupls = []
     base_url = "https://itunes.apple.com/search?"
-    #cur.execute(SELECT ...)
-    #movies = cur.fectchall()
-    for movie in movies:
-        d = {'term': year, 'media': 'movie', 'limit': 25}
+    for year in ['2019', '2020', '2021']:
+        d = {'term': year, 'media':'movie', 'limit': '65'}
         resp = requests.get(base_url, params = d)
         data = json.loads(resp.text)
 
+        for movie in data["results"]:
+            name = movie["trackName"].rstrip('(2020), (2019), (2021)')
+            data_tupls.append((name, movie["trackPrice"], year))
+
+    return data_tupls
+
+def addiTunesToMovies(tupls, cur, conn): 
+    cur.execute("SELECT max(movie_id) FROM Movies")
+    count = cur.fetchone()[0]
+
+    cur.execute("SELECT movie_title FROM Movies")
+    movies = cur.fetchall()
+    movies_list = []
+    for movie in movies:
+        movies_list.append(movie[0].upper())
+
+    i = count
+    index = 0
+    while i < count+25:
+        title = tupls[index][0]
+        year = tupls[index][2]
+
+        cur.execute(f"SELECT ID from Years WHERE year = {(str(year))}")
+        yearid = cur.fetchone()[0]
+        
+        inList = False
+        for movie in movies_list:
+            if title.upper().split()[:3] == movie.split()[:3]:
+                inList = True
+        if inList == False:
+            i += 1
+            cur.execute("INSERT OR IGNORE INTO Movies (movie_title, movie_id, yearID) VALUES (?,?,?)", (title, i, yearid))
+        index += 1
+    
+    conn.commit()
+
+def fillItunesTable(tupls, cur, conn):
+    cur.execute("SELECT COUNT (*) FROM iTunes")
+    count = cur.fetchone()[0]
+
+    for i in range(count, count+26):
+        title = tupls[i][0]
+        price = tupls[i][1]
+        cur.execute(f'SELECT movie_id from Movies where movie_title = "{title}"')
+        try:
+            id = cur.fetchone()[0]
+            cur.execute("INSERT OR IGNORE INTO iTunes (movieID, price) VALUES (?,?)", (id, price))
+        except:
+            "Not in movies database table"
+        
+    conn.commit()
 
 def main():
-    createTable()
-    
+    cur, conn = createTable()
+    tupls = getData()
+    addiTunesToMovies(tupls, cur, conn)
+    fillItunesTable(tupls, cur, conn)
 
 if __name__ == "__main__":
     main()
+
+
+#scatterplot w one axis price and one axis rating
+#price from iTunes and critic rating from IMDB where movieID is the same and wonID = 1 from Oscars table 
