@@ -40,14 +40,24 @@ def addiTunesToMovies(tupls, cur, conn):
     for movie in movies:
         movies_list.append(movie[0].upper())
 
-    for i in range(count, count+25):
-        title = tupls[abs(i - len(tupls))][0]
-        year = tupls[i - len(tupls)][2]
+    i = count
+    index = 0
+    while i < count+25:
+        title = tupls[index][0]
+        year = tupls[index][2]
+
         cur.execute(f"SELECT ID from Years WHERE year = {(str(year))}")
         yearid = cur.fetchone()[0]
-        if title.upper() not in movies_list:
+        
+        inList = False
+        for movie in movies_list:
+            if title.upper().split()[:3] == movie.split()[:3]:
+                inList = True
+        if inList == False:
+            i += 1
             cur.execute("INSERT OR IGNORE INTO Movies (movie_title, movie_id, yearID) VALUES (?,?,?)", (title, i, yearid))
-
+        index += 1
+    
     conn.commit()
 
 def fillItunesTable(tupls, cur, conn):
@@ -74,3 +84,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+#scatterplot w one axis price and one axis rating
+#price from iTunes and critic rating from IMDB where movieID is the same and wonID = 1 from Oscars table 
