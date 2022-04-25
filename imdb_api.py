@@ -13,8 +13,9 @@ def createRatingTable():
     conn = sqlite3.connect(path+'/'+"Movies.db")
     cur = conn.cursor()
 
+    #cur.execute("DROP TABLE IMDB_Ratings")
     cur.execute("CREATE TABLE IF NOT EXISTS IMDB_Ratings (movie_id INTEGER PRIMARY KEY, MetacriticScore INTEGER, ImdbRate INTEGER)")
-    #cur.execute("ALTER TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
+    #cur.execute("ALTER OR IGNORE TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
     conn.commit()
     return cur,conn
 
