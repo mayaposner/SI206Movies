@@ -1,4 +1,3 @@
-
 import sqlite3
 import os
 import matplotlib.pyplot as plt
@@ -12,10 +11,17 @@ def createRatingTable():
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+"Movies.db")
     cur = conn.cursor()
+    
+    # cur.execute("DROP TABLE IMDB_Ratings")
 
     #cur.execute("DROP TABLE IMDB_Ratings")
     cur.execute("CREATE TABLE IF NOT EXISTS IMDB_Ratings (movie_id INTEGER PRIMARY KEY, MetacriticScore INTEGER, ImdbRate INTEGER)")
+
     #cur.execute("ALTER OR IGNORE TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
+    # cur.execute("ALTER TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
+
+    #cur.execute("ALTER TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
+
     conn.commit()
     return cur,conn
 
@@ -33,6 +39,7 @@ def retrieveIMDBdata():
     return movie_ratings
 
 def fillRatingTable(movieratings, cur, conn):
+    #cur.execute("ALTER TABLE student ADD COLUMN Address varchar")
     cur.execute("SELECT max(movie_id) FROM IMDB_Ratings")
     count = cur.fetchone()[0]
     if count ==  None:
@@ -48,6 +55,11 @@ def fillRatingTable(movieratings, cur, conn):
         cur.execute("INSERT OR IGNORE INTO IMDB_Ratings (movie_id, MetacriticScore, ImdbRate, imdb_id) VALUES (?,?,?,?)", (movieid, meta, imdb, id))
 
     conn.commit()
+
+'''
+select from oscars join ratings where movie_id.oscars = movie_id.ratings if oscars_id = 1
+for data in bargraph, select from the oscars table all the movies that won oscars
+for each movie, 1 bar going up to the rate out of 100 for critic reviews, and 1 bar for audience reviews'''
 
 def graph_ratings_movies1to30(cur, conn):
     cur.execute("SELECT Movies.movie_title, IMDB_Ratings.ImdbRate, IMDB_Ratings.MetacriticScore FROM IMDB_Ratings JOIN Movies ON Movies.movie_id = IMDB_Ratings.movie_id")
@@ -130,6 +142,7 @@ def findAverageRatingDifference(cur, conn):
 
     average = difference/total
     return average
+
 
 def main():
     cur,conn = createRatingTable()
