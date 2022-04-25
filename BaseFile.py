@@ -16,10 +16,6 @@ def createMainTable(cur, conn):
     cur.execute("CREATE TABLE IF NOT EXISTS Movies (movie_title TEXT UNIQUE, movie_id INTEGER PRIMARY KEY UNIQUE , yearID INTEGER)")
     conn.commit()
 
-def createYearTable(cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS Years (year TEXT, ID INTEGER PRIMARY KEY UNIQUE)")
-    conn.commit()
-
 def retrieveIMDBdata():
     response = requests.get('https://imdb-api.com/API/AdvancedSearch/k_u7vte5gf?title_type=feature&release_date=2019-01-01,2022-01-01&groups=oscar_nominees&count=250&sort=alpha,asc')
     data = json.loads(response.text)
@@ -30,16 +26,6 @@ def retrieveIMDBdata():
         tuple = title, int(year[-4:])
         movie_tuples.append(tuple)
     return movie_tuples
-
-def fillYearTable(cur, conn):
-    yr = 2019
-    for i in range(3):
-        cur.execute("SELECT max(ID) FROM Years")
-        count = cur.fetchone()[0]
-        if count != 2:
-            cur.execute("INSERT OR IGNORE INTO Years (year, ID) VALUES (?, ?)", (yr, i))
-        yr += 1
-    conn.commit()
 
 def fillMovieTable(moviestups, cur, conn):
     cur.execute("SELECT max(movie_id) FROM Movies")
@@ -62,8 +48,6 @@ def fillMovieTable(moviestups, cur, conn):
 def main():
     cur, conn = setUpDataBase('Movies.db')
     createMainTable(cur, conn)
-    createYearTable(cur, conn)
-    fillYearTable(cur, conn)
     movies = retrieveIMDBdata()
     fillMovieTable(movies, cur, conn)
 
