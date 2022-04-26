@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json 
 import requests
-from bs4 import BeautifulSoup
 
 def createRatingTable():
 
@@ -12,17 +11,10 @@ def createRatingTable():
     conn = sqlite3.connect(path+'/'+"Movies.db")
     cur = conn.cursor()
     
-    # cur.execute("DROP TABLE IMDB_Ratings")
-
-    #cur.execute("DROP TABLE IMDB_Ratings")
-    cur.execute("CREATE TABLE IF NOT EXISTS IMDB_Ratings (movie_id INTEGER PRIMARY KEY, MetacriticScore INTEGER, ImdbRate INTEGER)")
-
-    #cur.execute("ALTER OR IGNORE TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
-    # cur.execute("ALTER TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
-
-    #cur.execute("ALTER TABLE IMDB_Ratings ADD COLUMN imdb_id TEXT") #comment this line out after you run the code once
+    cur.execute("CREATE TABLE IF NOT EXISTS IMDB_Ratings (movie_id INTEGER PRIMARY KEY, MetacriticScore INTEGER, ImdbRate INTEGER, imdb_id TEXT)")
 
     conn.commit()
+
     return cur,conn
 
 def retrieveIMDBdata():
@@ -39,7 +31,6 @@ def retrieveIMDBdata():
     return movie_ratings
 
 def fillRatingTable(movieratings, cur, conn):
-    #cur.execute("ALTER TABLE student ADD COLUMN Address varchar")
     cur.execute("SELECT max(movie_id) FROM IMDB_Ratings")
     count = cur.fetchone()[0]
     if count ==  None:
@@ -55,11 +46,6 @@ def fillRatingTable(movieratings, cur, conn):
         cur.execute("INSERT OR IGNORE INTO IMDB_Ratings (movie_id, MetacriticScore, ImdbRate, imdb_id) VALUES (?,?,?,?)", (movieid, meta, imdb, id))
 
     conn.commit()
-
-'''
-select from oscars join ratings where movie_id.oscars = movie_id.ratings if oscars_id = 1
-for data in bargraph, select from the oscars table all the movies that won oscars
-for each movie, 1 bar going up to the rate out of 100 for critic reviews, and 1 bar for audience reviews'''
 
 def graph_ratings_movies1to30(cur, conn):
     cur.execute("SELECT Movies.movie_title, IMDB_Ratings.ImdbRate, IMDB_Ratings.MetacriticScore FROM IMDB_Ratings JOIN Movies ON Movies.movie_id = IMDB_Ratings.movie_id")
@@ -121,10 +107,14 @@ def pieChartofRatings(cur, conn):
 
     fig1, ax1 = plt.subplots()
     ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',shadow=True, startangle=90, colors = colors)
+    plt.title("Do Critics or Audience Rate Movies Higher?")
     
     ax1.axis('equal')  
 
     plt.show()
+
+    sizetup = (audience_higher, critic_higher, tie)
+    return(sizetup)
 
 def findAverageRatingDifference(cur, conn):
     cur.execute("SELECT ImdbRate, MetacriticScore FROM IMDB_Ratings")
@@ -143,14 +133,31 @@ def findAverageRatingDifference(cur, conn):
     average = difference/total
     return average
 
+def averageRatetoFile(cur, average, audience, critic, tie):
+
+    file = open('ImdbOutfile.txt', 'w')
+ 
+    cur.execute("SELECT max(movie_id) FROM IMDB_Ratings")
+    totalintable = cur.fetchone()[0]
+
+    file.write("Number of times (out of {}) the Audience score was greater than the Critic score: {}\n".format(totalintable, audience))
+    file.write("Number of times (out of {}) the Critic score was greater than the Audience score: {}\n".format(totalintable, critic))
+    file.write("Number of times (out of {}) the Audience score was the same as the Critic score: {}\n".format(totalintable, tie))
+
+    file.write("Average difference between critic and audience rating scores: {}".format(average)) 
+
+    
+    file.close()
+
 
 def main():
     cur,conn = createRatingTable()
     movieratings = retrieveIMDBdata()
     fillRatingTable(movieratings, cur, conn)
     graph_ratings_movies1to30(cur, conn)
-    pieChartofRatings(cur, conn)
-    findAverageRatingDifference(cur, conn)
+    audience, critic, tie = pieChartofRatings(cur, conn)
+    average = findAverageRatingDifference(cur, conn)
+    averageRatetoFile(cur, average, audience, critic, tie)
 
 if __name__ == "__main__":
     main()
