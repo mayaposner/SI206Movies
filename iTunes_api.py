@@ -1,7 +1,6 @@
 import sqlite3
 import os
 import matplotlib.pyplot as plt
-import numpy as np
 import json 
 import requests
 
@@ -112,12 +111,15 @@ def visualize_data(prices, ratings):
     plt.show()  
 
 def main():
+    # Run at least 5 times to get 100 rows of data 
     cur, conn = createTable()
     tupls = getData()
     addiTunesToMovies(tupls, cur, conn)
     fillItunesTable(tupls, cur, conn)
-    prices, ratings = writeCalculatedData('iTunes_data.txt', cur, conn)
-    visualize_data(prices, ratings)
+
+    # To run calculations and see visualizations, uncomment the two lines below  
+    # prices, ratings = writeCalculatedData('iTunes_data.txt', cur, conn)
+    # visualize_data(prices, ratings)
 
 if __name__ == "__main__":
     main()
