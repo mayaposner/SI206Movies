@@ -154,10 +154,10 @@ def main():
     cur,conn = createRatingTable()
     movieratings = retrieveIMDBdata()
     fillRatingTable(movieratings, cur, conn)
-    graph_ratings_movies1to30(cur, conn)
-    audience, critic, tie = pieChartofRatings(cur, conn)
-    average = findAverageRatingDifference(cur, conn)
-    averageRatetoFile(cur, average, audience, critic, tie)
+    # graph_ratings_movies1to30(cur, conn)
+    # audience, critic, tie = pieChartofRatings(cur, conn)
+    # average = findAverageRatingDifference(cur, conn)
+    # averageRatetoFile(cur, average, audience, critic, tie)
 
 if __name__ == "__main__":
     main()

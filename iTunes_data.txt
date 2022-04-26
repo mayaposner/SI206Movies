@@ -1,3 +1,0 @@
-The average movie price for the iTunes movies that were sampled is $12.93.
-The average Metacritic Rating for the IMDB movies that were sampled is 73.
-There were 3 movies where a higher than average price correlated with a higher than average rating, or a lower than average price correlated with a lower than average rating.

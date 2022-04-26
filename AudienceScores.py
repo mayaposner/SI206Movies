@@ -43,7 +43,7 @@ def retrieveWatchModeScore(cur, conn, formatted_ids):
     us_rating_list = []
     base_url = "https://api.watchmode.com/v1/title/{}/details/?apiKey={}" 
     for id in formatted_ids:  
-        formatted_url = base_url.format(id, "FyOMZwdyJt85IG4w7XmSFJ5Fw8cJONDv57dPRhlv")
+        formatted_url = base_url.format(id, "phFnsumueQAmsHJRRABMsBSGUNfpnGBkcci9kyr8")
         data = requests.get(formatted_url)
         data_list = json.loads(data.text)
         try:
@@ -145,7 +145,7 @@ def pieChartAndText(file, data):
          f.write(f'The total number of not rated movies is {str(other_count)}. \n') 
     
 def main():
-    #Run at least 2 times 
+    #Run 2 times 
     cur, conn = maturityTable() 
     fillMaturityTable(cur, conn)
     movieMaturities(cur, conn)

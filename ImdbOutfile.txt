@@ -1,4 +1,0 @@
-Number of times (out of 97) the Audience score was greater than the Critic score: 45
-Number of times (out of 97) the Critic score was greater than the Audience score: 50
-Number of times (out of 97) the Audience score was the same as the Critic score: 3
-Average difference between critic and audience rating scores: 8.612244897959183
